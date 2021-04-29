@@ -61,7 +61,26 @@ function renderCountry(data, className = '') {
 const renderError = function (msg) {
   countriesContainer.insertAdjacentText('beforeend', msg);
 };
-
+// Render country
+// const whereAmI = function (lat, lng) {
+//   fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
+//     .then(res => {
+//       if (!res.ok) throw new Error(`Problem with geocoding ${res.status}`);
+//       return res.json();
+//     })
+//     .then(data => {
+//       console.log(data);
+//       console.log(`You are in ${data.city}, ${data.country}`);
+//       return fetch(`https://restcountries.eu/rest/v2/name/${data.country}`);
+//     })
+//     .then(response => {
+//       if (!response.ok)
+//         throw new Error(`Country not found (${response.status})`);
+//       return response.json();
+//     })
+//     .then(data => renderCountry(data[0]))
+//     .catch(err => console.error(`${err.message} 🎇`));
+// };
 /////////// Another way ////////////
 
 // function getCountryandNeighbour(country) {
@@ -174,11 +193,11 @@ const renderError = function (msg) {
 //   //   getCountryData('indonesia');
 // });
 
-var options = {
-  enableHighAccuracy: true,
-  timeout: 5000,
-  maximumAge: 0,
-};
+// var options = {
+//   enableHighAccuracy: true,
+//   timeout: 5000,
+//   maximumAge: 0,
+// };
 
 // Get Position automatically
 // function success(pos) {
@@ -199,15 +218,28 @@ var options = {
 
 // navigator.geolocation.getCurrentPosition(success, error, options);
 
-const whereAmI = function (lat, lng) {
-  fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+
+// getPosition().then(pos => console.log(pos.coords));
+
+const whereAmI = function () {
+  getPosition()
+    .then(pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+
+      return fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`);
+    })
     .then(res => {
       if (!res.ok) throw new Error(`Problem with geocoding ${res.status}`);
       return res.json();
     })
     .then(data => {
       console.log(data);
-      console.log(`You are in ${data.city}, ${data.country}`);
+      console.log(`You are in ${data.timezone}, ${data.country}`);
       return fetch(`https://restcountries.eu/rest/v2/name/${data.country}`);
     })
     .then(response => {
@@ -219,11 +251,9 @@ const whereAmI = function (lat, lng) {
     .catch(err => console.error(`${err.message} 🎇`));
 };
 
-whereAmI(52.508, 13.381);
-whereAmI(19.037, 72.873);
-whereAmI(-33.933, 18.474);
+// whereAmI(52.508, 13.381);
+// whereAmI(19.037, 72.873);
+// whereAmI(-33.933, 18.474);
 
-btn.addEventListener('click', function () {
-  getCountryData(data);
-  //   getCountryData('indonesia');
-});
+btn.addEventListener('click', whereAmI);
+//   getCountryData('indonesia');
